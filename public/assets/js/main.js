@@ -1,24 +1,69 @@
-function getIRIParameterValue(requestedKey){
+function getIRIParameterValue(requestedKey) {
     let pageIRI = window.location.search.substring(1);
     let pageIRIVariables = pageIRI.split('&');
-    for(let i = 0; i < pageIRIVariables.length; i++){
+    for (let i = 0; i < pageIRIVariables.length; i++) {
         let data = pageIRIVariables[i].split('=');
         let key = data[0];
         let value = data[1];
-        if (key === requestedKey){
+        if (key === requestedKey) {
             return value;
         }
     }
 }
 
 let username = decodeURI(getIRIParameterValue('username'));
-if ((typeof username == 'undefined') || (username === null)){
-    username = "Anonymous_"+Math.floor(Math.random()*1000);
+if ((typeof username == 'undefined') || (username === null)) {
+    username = "Anonymous_" + Math.floor(Math.random() * 1000);
 }
 
-$('#messages').prepend('<b>'+username+':</b>')
+let chatRoom = 'Lobby';
 
+/* Set up the socket.io connection to the server */
 let socket = io();
-socket.on('log',function(array){
-    console.log.apply(console,array);
+socket.on('log', function (array) {
+    console.log.apply(console, array);
 });
+
+/* Request to join the chat room */
+$(() => {
+    let request = {};
+    request.room = chatRoom;
+    request.username = username;
+    console.log('**** Client log message, sending \'join_room\' command: ' + JSON.stringify(request));
+    socket.emit('join_room', request);
+});
+
+socket.on('join_room_response', (payload) => {
+    if ((typeof payload == 'undefined') || (payload === null)) {
+        console.log('Server did not send a payload');
+        return;
+    }
+    if (payload.result === 'fail') {
+        console.log(payload.message);
+        return;
+    }
+    let newString = '<p class=\'join_room_response\'><strong>' + payload.username + '</strong> joined the ' + payload.room + '. There are ' + payload.count + ' users in this room.</p>'
+    $('#messages').prepend(newString);
+})
+
+function sendChatMessage() {
+    let request = {};
+    request.room = chatRoom;
+    request.username = username;
+    request.message = $('#chatMessage').val();
+    console.log('**** Client log message, sending \'send_chat_message\' command: ' + JSON.stringify(request));
+    socket.emit('send_chat_message', request);
+}
+
+socket.on('send_chat_message_response', (payload) => {
+    if ((typeof payload == 'undefined') || (payload === null)) {
+        console.log('Server did not send a payload');
+        return;
+    }
+    if (payload.result === 'fail') {
+        console.log(payload.message);
+        return;
+    }
+    let newString2 = '<p class=\'chat_message\'><strong>' + payload.username + '</strong>: ' + payload.message + '</p>'
+    $('#messages').prepend(newString2);
+})
