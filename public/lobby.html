@@ -8,23 +8,32 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
   <style>
-    .headerrow {
-      background-color: rgb(206, 218, 206);
+    body {
+      background-color: rgb(195, 219, 231);
     }
 
-    .join_room_response,
-    .left_room_response {
+    .headerrow {
+      background-color: rgb(151, 186, 204);
+    }
+
+    .join_room_response {
       background-color: whitesmoke;
       padding-top: 5px;
       padding-bottom: 5px;
     }
 
-    #messages {
-      padding-left: 10px;
+    .player_disconnected {
+      background-color: whitesmoke;
+      padding-top: 5px;
+      padding-bottom: 5px;
     }
 
     #messagePanel {
-      background-color: rgb(206, 218, 206);
+      background-color: rgb(219, 233, 239);
+    }
+
+    #messages {
+      background-color: rgb(219, 233, 239);
     }
   </style>
 
@@ -61,7 +70,7 @@
             <div>
               <h4>Messages</h4>
             </div>
-            <div class="input-group">
+            <div class="input-group mb-3">
               <input type="text" class="form-control text-nowrap" id="chatMessage" placeholder="Enter your message"
                 aria-label="Enter your message to send to the chat room" />
               <button type="submit" class="btn btn-primary text-nowrap" id="chatButton"

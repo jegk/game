@@ -1,0 +1,41 @@
+.headerrow {
+    background-color: rgb(206, 218, 206);
+}
+
+body {
+    background-color: whitesmoke;
+}
+
+
+.join_room_response {
+    background-color: whitesmoke;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.player_disconnected {
+    background-color: whitesmoke;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#messagePanel {
+    background-color: rgb(151, 186, 204);
+}
+
+table#game_board {
+    border: 6px solid whitesmoke;
+    margin: 0px;
+    padding: 0px;
+}
+
+table#game_board td {
+    border: 3px solid whitesmoke;
+    margin: 0px;
+    padding: 0px;
+    background-color: white;
+}
+
+.hovered_over:hover {
+    background-image: url('/assets/images/hover.gif');
+}
