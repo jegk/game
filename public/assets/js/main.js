@@ -189,7 +189,7 @@ socket.on('player_disconnected', (payload) => {
         console.log('Server did not send a payload');
         return;
     }
-    let newString = '<p class=\'player_disconnected\'><strong>' + payload.username + '</strong> left the ' + payload.room + '. There are ' + payload.count + ' users in this room.</p>';
+    let newString = '<p class=\'player_disconnected\'><strong>' + payload.username + '</strong> left the chatroom. There are ' + payload.count + ' users in this room.</p>';
     let newBuster = $(newString);
     newBuster.hide();
     $('#messages').prepend(newBuster);
@@ -234,6 +234,7 @@ let old_board = [
 ];
 
 let my_color = "";
+let interval_timer;
 
 socket.on('game_update', (payload) => {
     if ((typeof payload == 'undefined') || (payload === null)) {
@@ -264,14 +265,25 @@ socket.on('game_update', (payload) => {
         my_color = 'green';
     }
     else {
-        // window.location.href = "lobby.html?username=" + username;
-        // return;
+        window.location.href = "lobby.html?username=" + username;
+        return;
     }
 
     $("#my_color").html('<h3 id="my_color">I am ' + my_color + '</h3>');
 
+    if (payload.game.whose_turn === 'blue') {
+        $("#my_color").append('<h4>It is blue\'s turn</h4>');
+    }
+    else if (payload.game.whose_turn === 'green') {
+        $("#my_color").append('<h4>It is green\'s turn</h4>');
+    }
+    else {
+        $("#my_color").append('<h4>Error: Don\'t know whose turn it is</h4>');
+    }
+
     let bluesum = 0;
     let greensum = 0;
+
     // animate changes to board
     for (let row = 0; row < 8; row++) {
         for (let column = 0; column < 8; column++) {
@@ -332,9 +344,14 @@ socket.on('game_update', (payload) => {
                 // find the location on our board we're updating
                 const t = Date.now();
                 $('#' + row + '_' + column).html('<img class="img-fluid" src="assets/images/' + graphic + '?time=' + t + '" alt="' + altTag + '" />');
+            }
 
-                $('#' + row + '_' + column).off('click');
-                if (board[row][column] === ' ') {
+            // Set up interactivity here
+            $('#' + row + '_' + column).off('click');
+            $('#' + row + '_' + column).removeClass('hovered_over');
+
+            if (payload.game.whose_turn === my_color) {
+                if (payload.game.legal_moves[row][column] === my_color.substring(0, 1)) {
                     $('#' + row + '_' + column).addClass('hovered_over');
                     $('#' + row + '_' + column).click(((r, c) => {
                         return (() => {
@@ -348,12 +365,37 @@ socket.on('game_update', (payload) => {
                         });
                     })(row, column));
                 }
-                else {
-                    $('#' + row + '_' + column).removeClass('hovered_over');
-                }
             }
         }
     }
+
+    // closure - timer for elapsed
+    clearInterval(interval_timer)
+    interval_timer = setInterval(((last_time) => {
+        return (() => {
+            let d = new Date();
+            let elapsed_m = d.getTime() - last_time;
+            let minutes = Math.floor((elapsed_m / 1000) / 60);
+            let seconds = Math.floor((elapsed_m % (60 * 1000)) / 1000);
+            let total = minutes * 60 + seconds;
+            if (total > 100) {
+                total = 100;
+            }
+            $("#elapsed").css("width", total + "%").attr("aria-valuenow", total);
+            let timestring = "" + seconds;
+            timestring = timestring.payload(2, '0');
+            timestring = minutes + ":" + timestring;
+            if (total < 100) {
+                $("#elapsed").html(timestring);
+            }
+            else {
+                $("#elapsed").html("Time is up!");
+            }
+        })
+
+    })(payload.game.last_move_time)
+        , 1000);
+
     $("#greensum").html(greensum);
     $("#bluesum").html(bluesum);
     old_board = board;
@@ -366,6 +408,7 @@ socket.on('play_token_response', (payload) => {
     }
     if (payload.result === 'fail') {
         console.log(payload.message);
+        alert(payload.message);
         return;
     }
 })
@@ -386,10 +429,10 @@ socket.on('game_over', (payload) => {
     let nodeB = $("<h1>Game Over</h1>");
     let nodeC = $("<h2>" + payload.who_won + " won!</h2>");
     let nodeD = $("<a href='lobby.html?username=" + username + "' class='btn btn-lg btn-success' role='button'>Return to lobby</a>");
-    nodaA.append(nodeB);
-    nodaA.append(nodeC);
-    nodaA.append(nodeD);
-    nodaA.hide();
+    nodeA.append(nodeB);
+    nodeA.append(nodeC);
+    nodeA.append(nodeD);
+    nodeA.hide();
     $('#game_over').replaceWith(nodeA);
     nodeA.show("fade", 1000);
 })
